@@ -26,6 +26,9 @@ public class DragObject : MonoBehaviour
         {
             speed = new Vector3(-Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"), 0);
             avgSpeed = Vector3.Lerp(avgSpeed, speed, Time.deltaTime * 3);
+
+            transform.Rotate(Camera.main.transform.up * speed.x * rotationSpeed, Space.World);
+            transform.Rotate(Camera.main.transform.right * speed.y * rotationSpeed, Space.World);
         }
         else
         {
@@ -37,7 +40,7 @@ public class DragObject : MonoBehaviour
             var i = Time.deltaTime * lerpSpeed;
             speed = Vector3.Lerp(speed, Vector3.zero, i);
         }
-        transform.Rotate(Camera.main.transform.up * speed.x * rotationSpeed, Space.World);
-        transform.Rotate(Camera.main.transform.right * speed.y * rotationSpeed, Space.World);
+        //transform.Rotate(Camera.main.transform.up * speed.x * rotationSpeed, Space.World);
+        //transform.Rotate(Camera.main.transform.right * speed.y * rotationSpeed, Space.World);
     }
 }
