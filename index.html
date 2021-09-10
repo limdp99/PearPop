@@ -15,10 +15,10 @@
 			import { RGBELoader } from './threejs/r132/examples/jsm/loaders/RGBELoader.js';
 			import { RoughnessMipmapper } from './threejs/r132/examples/jsm/utils/RoughnessMipmapper.js';
 
-			let camera, scene, renderer, controls, font1, font2;
+			let camera, scene, renderer, controls, font1, font2, videoTexture, idTagTexture, profileTexture;
 
 			// metadata
-			let envTexturePath, modelPath, font1Path, font2Path;
+			let envTexturePath, modelPath, font1Path, font2Path, videoPath, idTagPath, profilePath;
 			let title, eth, usd, currentCount, totalCount;
 
 			setMetadata();
@@ -29,9 +29,12 @@
 
 			function setMetadata() {
 				envTexturePath = './resources/royal_esplanade_1k.hdr';
-				modelPath = './resources/models/playdate/playdate.glb';
-				font1Path = './resources/fonts/optimer_bold.typeface.json';
+				modelPath = './resources/models/Disc02_Platinum_notext5.glb';
+				font1Path = './resources/fonts/helvetiker_bold.typeface.json';
 				font2Path = './resources/fonts/helvetiker_regular.typeface.json';
+				videoPath = './resources/Preview_video.png';
+				idTagPath = './resources/ID_owner.png';
+				profilePath = './resources/Profile_owner.png';
 
 				title = 'NFT Title goes..';
 				eth = 10;
@@ -84,6 +87,7 @@
 						scene.add(gltf.scene);
 							
 						// render text
+						//gltf.scene.getObjectByName('Disk_003', true).scale.set(0.01, 0.01, 0.01);
 						renderFrontDisplay(gltf.scene); //gltf.scene.getObjectByName('mesh_5', true);
 						
 						roughnessMipmapper.dispose();
@@ -110,6 +114,12 @@
 				new THREE.FontLoader().load(font1Path, function(font) { font1 = font; });
 				new THREE.FontLoader().load(font2Path, function(font) { font2 = font; });
 
+				// texture
+				var textureLoader = new THREE.TextureLoader();
+				videoTexture = textureLoader.load(videoPath);
+				idTagTexture = textureLoader.load(idTagPath);
+				profileTexture = textureLoader.load(profilePath);
+				
 				// control
 				const controls = new OrbitControls(camera, renderer.domElement);
 				controls.addEventListener('change', render); // use if there is no animation loop
@@ -148,33 +158,63 @@
 
 			function renderFrontDisplay(obj)
 			{
-				const z = 1.05;
+				const z = 0.25;
 		
-				// right
-				renderText(obj, font1, 2, 6.8, z, 'Price', 0.35, 0x2F2E2E);
-				renderText(obj, font1, 2, 6.1, z, eth + ' ETH', 0.45, 0x000000);
-				renderText(obj, font1, 2, 5.5, z, usd + ' USD', 0.3, 0x2F2E2E);
+				// right text
+				renderText(obj, font1, 1.5, 2.5, z, 'Price', 0.35, 0x000000);
+				renderText(obj, font1, 1.45, 1.6, z, eth + ' ETH', 0.50, 0x000000);
+				renderText(obj, font1, 1.5, 1.0, z, usd + ' USD', 0.2, 0x000000);
 
-				// bottom
-				renderText(obj, font1, -1.9, 4.7, z, title, 0.35, 0x121212);
-				renderText(obj, font1, -1.9, 4.2, z, currentCount + ' / ' + totalCount, 0.2, 0x121212);
+				// bottom text
+				renderText(obj, font1, -4.5, -3.0, z, title, 0.45, 0x121212);
+				renderText(obj, font1, -4.5, -3.5, z, currentCount + ' / ' + totalCount, 0.2, 0x121212);
+
+				// preview texture
+				renderTexture(obj, videoTexture, -2.05, 0.82, z, 5, 5);
+				renderTexture(obj, idTagTexture, -0.8, -1.93, z, 2.5, 0.5);
+			}
+
+			/////////////////////////////////////////////////////////////////////////////////////////
+
+			function renderTexture(obj, texture, x, y, z, w, h)
+			{
+				x /= 10;
+				y /= 10;
+				z /= 10;
+				w /= 10;
+				h /= 10;
+
+				const mat = new THREE.MeshBasicMaterial( {
+					map: texture, 
+					side: THREE.DoubleSide
+				});
+				
+				const geometry = new THREE.PlaneGeometry(w, h);
+				const mesh = new THREE.Mesh(geometry, mat);
+				mesh.position.set(x, y, z);
+				obj.add(mesh);				
 			}
 
 			/////////////////////////////////////////////////////////////////////////////////////////
 
 			function renderText(parentObj, font, x, y, z, text, size, color) 
 			{
+				x /= 10;
+				y /= 10;
+				z /= 10;
+				size /= 10;
+
 				const mat = new THREE.MeshBasicMaterial( {
 					color: color,
 					side: THREE.DoubleSide
 				});
 
 				const shapes = font.generateShapes(text, size);
-				const geometry = new THREE.ShapeGeometry(shapes);
+				const geometry = new THREE.ShapeGeometry(shapes, 12);
 				const mesh = new THREE.Mesh(geometry, mat);
 				mesh.position.set(x, y, z);
-				parentObj.add( mesh );
-					
+				parentObj.add(mesh);
+
 				render();
 			}
   
